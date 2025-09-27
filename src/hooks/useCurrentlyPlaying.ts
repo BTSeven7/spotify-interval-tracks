@@ -17,12 +17,14 @@ type HookState = {
   track: CurrentTrack | null
   error: string | null
   isLoading: boolean
+  initialized: boolean
 }
 
 const INITIAL_STATE: HookState = {
   track: null,
   error: null,
-  isLoading: false
+  isLoading: false,
+  initialized: false
 }
 
 // Spotify Web API requires polling for playback updates when not using the Web Playback SDK.
@@ -52,7 +54,7 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
 
         if (response.status === 204) {
           if (isActive) {
-            setState({ track: null, error: null, isLoading: false })
+            setState({ track: null, error: null, isLoading: false, initialized: true })
           }
           return
         }
@@ -67,7 +69,7 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
 
         if (!item) {
           if (isActive) {
-            setState({ track: null, error: null, isLoading: false })
+            setState({ track: null, error: null, isLoading: false, initialized: true })
           }
           return
         }
@@ -84,14 +86,15 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
         }
 
         if (isActive) {
-          setState({ track: nextTrack, error: null, isLoading: false })
+          setState({ track: nextTrack, error: null, isLoading: false, initialized: true })
         }
       } catch (err) {
         if (isActive) {
           setState({
             track: null,
             error: err instanceof Error ? err.message : 'Unknown error while fetching current track.',
-            isLoading: false
+            isLoading: false,
+            initialized: true
           })
         }
       }
@@ -112,4 +115,6 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
 
   return { track, error, isLoading }
 }
+
+
 
