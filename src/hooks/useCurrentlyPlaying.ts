@@ -41,7 +41,7 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
     let isActive = true
 
     const fetchCurrentTrack = async () => {
-      setState(prev => ({ ...prev, isLoading: prev.track === null }))
+      setState(prev => (prev.track === null && prev.error === null && !prev.isLoading ? { ...prev, isLoading: true } : prev))
 
       try {
         const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
@@ -112,3 +112,4 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
 
   return { track, error, isLoading }
 }
+
