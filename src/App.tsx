@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import IntervalBuilder from './components/IntervalBuilder'
+import SongCounterPanel from './components/SongCounterPanel'
 import { useAuth } from './context/AuthContext'
 import { useCurrentlyPlaying } from './hooks/useCurrentlyPlaying'
 import { useIntervalPlan } from './hooks/useIntervalPlan'
@@ -17,11 +18,12 @@ const modeOptions: Array<{ id: Mode; label: string }> = [
 
 function App() {
   const { tokens, isReady } = useAuth()
-  const { track, error: trackError, isLoading: isTrackLoading } = useCurrentlyPlaying(tokens)
   const [activeMode, setActiveMode] = useState<Mode>('interval-slicer')
+  const isSongCounterMode = activeMode === 'song-counter'
+  const pollInterval = isSongCounterMode ? 1200 : 5000
+  const { track, error: trackError, isLoading: isTrackLoading } = useCurrentlyPlaying(tokens, pollInterval)
   const [isAuthorizing, setIsAuthorizing] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-
   const intervalPlan = useIntervalPlan()
   const intervalSession = useIntervalSession(tokens, intervalPlan.stats)
   const wakeLock = useScreenWakeLock()
@@ -34,6 +36,13 @@ function App() {
       setAuthError(null)
     }
   }, [isConnected])
+
+  useEffect(() => {
+    if (isSongCounterMode && intervalSession.state.status === 'running') {
+      intervalSession.stopSession()
+    }
+  }, [isSongCounterMode, intervalSession.state.status, intervalSession.stopSession])
+
 
   const handleConnect = useCallback(async () => {
     if (isConnected) {
@@ -160,46 +169,57 @@ function App() {
               </div>
             </article>
 
-            <section className="space-y-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Interval plan</h2>
-              <IntervalBuilder {...intervalPlan} />
-            </section>
+            {isSongCounterMode ? (
+              <SongCounterPanel
+                tokens={tokens}
+                track={track}
+                trackError={trackError}
+                isTrackLoading={isTrackLoading}
+              />
+            ) : (
+              <>
+                <section className="space-y-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Interval plan</h2>
+                  <IntervalBuilder {...intervalPlan} />
+                </section>
 
-            <article className="space-y-4 rounded-3xl p-0">
-              {intervalSession.state.status === 'running' ? (
-                <button
-                  type="button"
-                  onClick={intervalSession.stopSession}
-                  className="h-12 w-full rounded-full border border-rose-400/60 bg-rose-500/15 text-2xl font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25"
-                >
-                  Stop session
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={intervalSession.startSession}
-                  disabled={!canStartSession}
-                  className={`h-12 w-full rounded-full border text-2xl font-semibold uppercase tracking-wide transition ${canStartSession ? 'border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-slate-900 text-slate-500'}`}
-                >
-                  Start session
-                </button>
-              )}
+                <article className="space-y-4 rounded-3xl p-0">
+                  {intervalSession.state.status === 'running' ? (
+                    <button
+                      type="button"
+                      onClick={intervalSession.stopSession}
+                      className="h-12 w-full rounded-full border border-rose-400/60 bg-rose-500/15 text-2xl font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25"
+                    >
+                      Stop session
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={intervalSession.startSession}
+                      disabled={!canStartSession}
+                      className={`h-12 w-full rounded-full border text-2xl font-semibold uppercase tracking-wide transition ${canStartSession ? 'border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-slate-900 text-slate-500'}`}
+                    >
+                      Start session
+                    </button>
+                  )}
 
-              {canShowStats ? (
-                <ul className="space-y-3 text-xl text-slate-300">
-                  <li className="flex items-center justify-between">
-                    <span>Status</span>
-                    <span>{sessionStatusLabel}</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span>Slice</span>
-                    <span>{sliceDisplay}</span>
-                  </li>
-                </ul>
-              ) : (
-                <p className="text-sm text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
-              )}
-            </article>
+                  {canShowStats ? (
+                    <ul className="space-y-3 text-xl text-slate-300">
+                      <li className="flex items-center justify-between">
+                        <span>Status</span>
+                        <span>{sessionStatusLabel}</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span>Slice</span>
+                        <span>{sliceDisplay}</span>
+                      </li>
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
+                  )}
+                </article>
+              </>
+            )}
           </div>
 
           <aside className="space-y-6">
@@ -278,5 +298,15 @@ function timeAgo(timestamp: number) {
 }
 
 export default App
+
+
+
+
+
+
+
+
+
+
 
 
