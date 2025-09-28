@@ -32,7 +32,7 @@ export default function IntervalBuilder({
   resetPlan
 }: IntervalPlanControls) {
   const remainderText = stats.remainderMs > 0 ? formatClock(stats.remainderMs) : 'n/a'
-  const skipMessage = stats.skipCount === 0 ? 'No track skips � just ride it out.' : `${stats.skipCount} planned track skips.`
+  const skipMessage = stats.skipCount === 0 ? 'No track skips - just ride it out.' : `${stats.skipCount} planned track skips.`
 
   return (
     <div className="space-y-8">

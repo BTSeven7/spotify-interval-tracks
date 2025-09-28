@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AuthTokens } from '../context/AuthContext'
 
 export type CurrentTrack = {
+  trackId: string
   trackName: string
   artistNames: string
   albumName: string
@@ -27,11 +28,10 @@ const INITIAL_STATE: HookState = {
   initialized: false
 }
 
-// Spotify Web API requires polling for playback updates when not using the Web Playback SDK.
 const DEFAULT_POLL_INTERVAL = 5000
 
 export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = DEFAULT_POLL_INTERVAL) {
-  const [{ track, error, isLoading }, setState] = useState<HookState>(INITIAL_STATE)
+  const [state, setState] = useState<HookState>(INITIAL_STATE)
   const pollRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
     let isActive = true
 
     const fetchCurrentTrack = async () => {
-      setState(prev => (prev.track === null && prev.error === null && !prev.isLoading ? { ...prev, isLoading: true } : prev))
+      setState(prev => (prev.initialized ? prev : { ...prev, isLoading: true }))
 
       try {
         const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
@@ -54,7 +54,17 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
 
         if (response.status === 204) {
           if (isActive) {
-            setState({ track: null, error: null, isLoading: false, initialized: true })
+            setState(prev => {
+              if (!prev.initialized) {
+                return { track: null, error: null, isLoading: false, initialized: true }
+              }
+
+              if (prev.track === null && prev.error === null && !prev.isLoading) {
+                return prev
+              }
+
+              return { ...prev, track: null, error: null, isLoading: false, initialized: true }
+            })
           }
           return
         }
@@ -69,12 +79,23 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
 
         if (!item) {
           if (isActive) {
-            setState({ track: null, error: null, isLoading: false, initialized: true })
+            setState(prev => {
+              if (!prev.initialized) {
+                return { track: null, error: null, isLoading: false, initialized: true }
+              }
+
+              if (prev.track === null && prev.error === null && !prev.isLoading) {
+                return prev
+              }
+
+              return { ...prev, track: null, error: null, isLoading: false, initialized: true }
+            })
           }
           return
         }
 
         const nextTrack: CurrentTrack = {
+          trackId: item.id,
           trackName: item.name,
           artistNames: Array.isArray(item.artists) ? item.artists.map((artist: any) => artist.name).join(', ') : 'Unknown artist',
           albumName: item.album?.name ?? 'Unknown album',
@@ -86,15 +107,41 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
         }
 
         if (isActive) {
-          setState({ track: nextTrack, error: null, isLoading: false, initialized: true })
+          setState(prev => {
+            if (
+              prev.track &&
+              prev.track.trackId === nextTrack.trackId &&
+              prev.track.isPlaying === nextTrack.isPlaying &&
+              prev.track.albumArtUrl === nextTrack.albumArtUrl &&
+              prev.track.artistNames === nextTrack.artistNames &&
+              prev.track.albumName === nextTrack.albumName &&
+              prev.track.durationMs === nextTrack.durationMs
+            ) {
+              return {
+                ...prev,
+                track: { ...nextTrack },
+                isLoading: false,
+                error: null,
+                initialized: true
+              }
+            }
+
+            return { track: nextTrack, error: null, isLoading: false, initialized: true }
+          })
         }
       } catch (err) {
         if (isActive) {
-          setState({
-            track: null,
-            error: err instanceof Error ? err.message : 'Unknown error while fetching current track.',
-            isLoading: false,
-            initialized: true
+          setState(prev => {
+            const message = err instanceof Error ? err.message : 'Unknown error while fetching current track.'
+            if (prev.error === message && prev.track === null && prev.initialized) {
+              return prev
+            }
+            return {
+              track: null,
+              error: message,
+              isLoading: false,
+              initialized: true
+            }
           })
         }
       }
@@ -111,10 +158,8 @@ export function useCurrentlyPlaying(tokens: AuthTokens | null, pollMs: number = 
         pollRef.current = null
       }
     }
-  }, [tokens?.accessToken, pollMs, tokens?.expiresAt])
+  }, [tokens?.accessToken, pollMs])
 
-  return { track, error, isLoading }
+  return state
 }
-
-
 
