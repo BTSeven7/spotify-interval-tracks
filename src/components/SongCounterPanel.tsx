@@ -100,7 +100,7 @@ export default function SongCounterPanel({ tokens, track, trackError, isTrackLoa
       <div className="space-y-3 rounded-2xl border border-slate-800/60 bg-slate-950/40 p-4">
         <div className="grid grid-cols-2 gap-3 text-sm text-slate-300">
           <div>
-            <p className="text-lg uppercase tracking-wide text-slate-500">Remaining (current)</p>
+            <p className="text-lg uppercase tracking-wide text-slate-500">Remaining</p>
             <p className="text-2xl font-semibold text-white">{formatDuration(session.remainingMs)}</p>
           </div>
           <div>
@@ -108,7 +108,7 @@ export default function SongCounterPanel({ tokens, track, trackError, isTrackLoa
             <p className="text-2xl font-semibold text-white">{formatDuration(session.afterSongMs)}</p>
           </div>
           <div>
-            <p className="text-lg uppercase tracking-wide text-slate-500">Songs completed</p>
+            <p className="text-lg uppercase tracking-wide text-slate-500">Songs</p>
             <p className="text-2xl font-semibold text-white">{session.songsCompleted}</p>
           </div>
           <div>
