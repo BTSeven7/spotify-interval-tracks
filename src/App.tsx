@@ -132,12 +132,12 @@ function App() {
               <IntervalBuilder {...intervalPlan} />
             </section>
 
-            <article className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
+            <article className="space-y-4 rounded-3xl p-0">
               {intervalSession.state.status === 'running' ? (
                 <button
                   type="button"
                   onClick={intervalSession.stopSession}
-                  className="h-12 w-full rounded-full border border-rose-400/60 bg-rose-500/15 text-sm font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25"
+                  className="h-12 w-full rounded-full border border-rose-400/60 bg-rose-500/15 text-2xl font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25"
                 >
                   Stop session
                 </button>
@@ -146,7 +146,7 @@ function App() {
                   type="button"
                   onClick={intervalSession.startSession}
                   disabled={!canStartSession}
-                  className={`h-12 w-full rounded-full border text-sm font-semibold uppercase tracking-wide transition ${canStartSession ? 'border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-slate-900 text-slate-500'}`}
+                  className={`h-12 w-full rounded-full border text-2xl font-semibold uppercase tracking-wide transition ${canStartSession ? 'border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-slate-900 text-slate-500'}`}
                 >
                   Start session
                 </button>
