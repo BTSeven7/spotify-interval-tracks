@@ -73,11 +73,11 @@ function App() {
         ? 'Activating...'
         : 'Keep screen on'
 
-  const wakeLockHelperText = !wakeLock.isSupported
-    ? 'Use display settings to keep the screen awake.'
-    : wakeLock.isActive
-      ? 'Screen stay-awake is active for this session.'
-      : 'Prevent auto-lock while you ride.'
+  // const wakeLockHelperText = !wakeLock.isSupported
+  //   ? 'Use display settings to keep the screen awake.'
+  //   : wakeLock.isActive
+  //     ? 'Screen stay-awake is active for this session.'
+  //     : 'Prevent auto-lock while you ride.'
 
   const sessionStatusLabel = {
     idle: 'Ready',
