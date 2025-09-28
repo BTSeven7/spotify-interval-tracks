@@ -68,15 +68,12 @@ function App() {
   }[intervalSession.state.status]
 
   const totalSlices = intervalPlan.stats.timeline.length
-  const currentSliceIndex = totalSlices === 0 ? 0 : Math.min(intervalSession.currentSliceIndex, totalSlices - 1)
-  const currentSliceNumber = totalSlices === 0 ? 0 : currentSliceIndex + 1
-  const currentSlice = intervalSession.currentSlice
-  const elapsedDisplay = intervalSession.state.startedAt ? formatProgress(intervalSession.elapsedMs) : '0:00'
-  const nextSkipDisplay = currentSlice && currentSlice.skipAfter && intervalSession.nextSkipInMs !== null
-    ? formatProgress(intervalSession.nextSkipInMs)
-    : 'No skip pending'
-  const currentSliceDuration = currentSlice ? formatProgress(currentSlice.durationMs) : '-'
+  const currentSliceNumber = totalSlices === 0
+    ? 0
+    : Math.min(intervalSession.currentSliceIndex + 1, totalSlices)
+  const sliceDisplay = currentSliceNumber === 0 ? '-' : `${currentSliceNumber}`
   const canStartSession = intervalSession.canStart && isConnected
+  const canShowStats = isConnected && totalSlices > 0
 
   if (!isReady) {
     return (
@@ -138,56 +135,38 @@ function App() {
             </article>
 
             <article className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
-              <header className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Interval playback</h2>
-                  <p className="text-xs text-slate-400">Start when your playlist is rolling; we\'ll cue the skips.</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {intervalSession.state.status === 'running' ? (
-                    <button
-                      type="button"
-                      onClick={intervalSession.stopSession}
-                      className="rounded-full border border-rose-400/50 bg-rose-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/20"
-                    >
-                      Stop
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={intervalSession.startSession}
-                      disabled={!canStartSession}
-                      className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${canStartSession ? 'border border-emerald-400/60 bg-emerald-500/10 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/20' : 'border border-slate-800 bg-slate-900 text-slate-500'}`}
-                    >
-                      Start
-                    </button>
-                  )}
-                </div>
-              </header>
-
-              {!canStartSession ? (
-                <p className="text-xs text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
+              {intervalSession.state.status === 'running' ? (
+                <button
+                  type="button"
+                  onClick={intervalSession.stopSession}
+                  className="h-12 w-full rounded-full border border-rose-400/60 bg-rose-500/15 text-sm font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25"
+                >
+                  Stop session
+                </button>
               ) : (
-                <ul className="space-y-2 text-sm text-slate-300">
+                <button
+                  type="button"
+                  onClick={intervalSession.startSession}
+                  disabled={!canStartSession}
+                  className={`h-12 w-full rounded-full border text-sm font-semibold uppercase tracking-wide transition ${canStartSession ? 'border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-slate-900 text-slate-500'}`}
+                >
+                  Start session
+                </button>
+              )}
+
+              {canShowStats ? (
+                <ul className="space-y-3 text-sm text-slate-300">
                   <li className="flex items-center justify-between">
                     <span>Status</span>
                     <span>{sessionStatusLabel}</span>
                   </li>
                   <li className="flex items-center justify-between">
-                    <span>Elapsed</span>
-                    <span>{elapsedDisplay}</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span>
-                      Slice {currentSliceNumber}/{totalSlices}
-                    </span>
-                    <span>{currentSliceDuration}</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span>Next skip</span>
-                    <span>{nextSkipDisplay}</span>
+                    <span>Slice</span>
+                    <span>{sliceDisplay}</span>
                   </li>
                 </ul>
+              ) : (
+                <p className="text-xs text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
               )}
             </article>
           </div>

@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import type { IntervalPlanControls } from '../hooks/useIntervalPlan'
 import { SLICE_OPTIONS_SECONDS } from '../hooks/useIntervalPlan'
 
@@ -153,56 +151,6 @@ export default function IntervalBuilder({
           })}
         </div>
       </section>
-
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Timeline preview</h3>
-            <p className="text-xs text-slate-400">
-              Every marker triggers a track skip except the final slice, which plays out to the end.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-          {stats.timeline.length === 0 ? (
-            <p className="text-sm text-slate-400">Increase the interval length to generate song markers.</p>
-          ) : (
-            stats.timeline.map(slice => (
-              <Fragment key={slice.index}>
-                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-800/60 bg-slate-950/80 px-4 py-3">
-                  <div className="flex flex-col text-xs uppercase tracking-wide text-slate-500">
-                    <span>Slice {slice.index + 1}</span>
-                    <span className="text-[11px] text-slate-600">
-                      {slice.isRemainder && stats.remainderMs > 0 ? 'Final slice (plays out)' : 'Track marker'}
-                    </span>
-                  </div>
-                  <div className="ml-auto flex flex-col items-end text-sm text-slate-300">
-                    <span>{formatClock(slice.durationMs)}</span>
-                    <span className="text-xs text-slate-500">Starts {formatClock(slice.startMs)}</span>
-                    <span className="text-xs text-slate-500">
-                      {slice.skipAfter ? `Skip at ${formatClock(slice.endMs)}` : 'No skip - let it ride'}
-                    </span>
-                  </div>
-                </div>
-              </Fragment>
-            ))
-          )}
-        </div>
-      </section>
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
