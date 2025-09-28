@@ -1,0 +1,51 @@
+            <article className="rounded-3xl border border-slate-800 bg-slate-900/40 p-4 sm:p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Choose mode</h2>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {modeOptions.map((mode) => {
+                  const selected = activeMode === mode.id
+                  return (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      onClick={() => setActiveMode(mode.id)}
+                      aria-pressed={selected}
+                      className={`rounded-2xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 ${selected ? 'border-emerald-400/80 bg-emerald-500/10 text-white' : 'border-slate-800/70 bg-slate-900/70 text-slate-200 hover:border-emerald-400/60 hover:text-white'}`}
+                    >
+                      <h3 className="text-xl font-semibold">{mode.label}</h3>
+                    </button>
+                  )
+                })}
+              </div>
+            </article>
+
+            <section className="space-y-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Interval plan</h2>
+              <IntervalBuilder {...intervalPlan} />
+            </section>
+
+            <article className="space-y-4 rounded-3xl p-0">
+              {intervalSession.state.status === 'running' ? (
+                <button
+                  type="button"
+                  onClick={intervalSession.stopSession}
+                  className="h-12 w-full rounded-full border border-rose-400/60 bg-rose-500/15 text-2xl font-semibold uppercase tracking-wide text-rose-200 transition hover:border-rose-300 hover:bg-rose-500/25"
+                >
+                  Stop session
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={intervalSession.startSession}
+                  disabled={!canStartSession}
+                  className={`h-12 w-full rounded-full border text-2xl font-semibold uppercase tracking-wide transition ${canStartSession ? 'border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/25' : 'border-slate-800 bg-slate-900 text-slate-500'}`}
+                >
+                  Start session
+                </button>
+              )}
+
+              {canShowStats ? (
+                <ul className="space-y-3 text-xl text-slate-300">
+                  <li className="flex items-center justify-between">
+                    <span>Status</span>
+                    <span>{sessionStatusLabel}</span>
+                  </li>

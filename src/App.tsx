@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext'
 import { useCurrentlyPlaying } from './hooks/useCurrentlyPlaying'
 import { useIntervalPlan } from './hooks/useIntervalPlan'
 import { useIntervalSession } from './hooks/useIntervalSession'
+import { useScreenWakeLock } from './hooks/useScreenWakeLock'
 import { beginSpotifyAuth } from './lib/spotifyAuth'
 
 type Mode = 'interval-slicer' | 'song-counter'
@@ -23,6 +24,7 @@ function App() {
 
   const intervalPlan = useIntervalPlan()
   const intervalSession = useIntervalSession(tokens, intervalPlan.stats)
+  const wakeLock = useScreenWakeLock()
 
   const isConnected = Boolean(tokens)
 
@@ -60,6 +62,22 @@ function App() {
     : isAuthorizing
       ? 'Opening Spotify...'
       : 'Connect Spotify'
+
+  const wakeLockButtonLabel = !wakeLock.isSupported
+    ? 'Unavailable'
+    : wakeLock.isActive
+      ? wakeLock.isRequesting
+        ? 'Refreshing...'
+        : 'Screen on'
+      : wakeLock.isRequesting
+        ? 'Activating...'
+        : 'Keep screen on'
+
+  const wakeLockHelperText = !wakeLock.isSupported
+    ? 'Use display settings to keep the screen awake.'
+    : wakeLock.isActive
+      ? 'Screen stay-awake is active for this session.'
+      : 'Prevent auto-lock while you ride.'
 
   const sessionStatusLabel = {
     idle: 'Ready',
@@ -125,6 +143,26 @@ function App() {
                   )
                 })}
               </div>
+
+              <div className="mt-4 space-y-2 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Keep screen awake</p>
+                    <p className="text-xs text-slate-400">{wakeLockHelperText}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void wakeLock.toggle()}
+                    disabled={!wakeLock.isSupported || wakeLock.isRequesting}
+                    className={`w-full rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition sm:w-auto ${wakeLock.isActive ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200' : 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-emerald-400/60 hover:text-emerald-200'} ${(!wakeLock.isSupported || wakeLock.isRequesting) ? 'cursor-not-allowed opacity-60' : ''}`}
+                  >
+                    {wakeLockButtonLabel}
+                  </button>
+                </div>
+                {wakeLock.error && (
+                  <p className="text-xs text-rose-300">{wakeLock.error}</p>
+                )}
+              </div>
             </article>
 
             <section className="space-y-4">
@@ -164,7 +202,7 @@ function App() {
                   </li>
                 </ul>
               ) : (
-                <p className="text-m text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
+                <p className="text-sm text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
               )}
             </article>
           </div>
@@ -245,4 +283,3 @@ function timeAgo(timestamp: number) {
 }
 
 export default App
-
