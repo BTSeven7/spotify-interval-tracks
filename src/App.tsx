@@ -127,12 +127,10 @@ function App() {
               </div>
             </article>
 
-            <article className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
+            <section className="space-y-4">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Interval plan</h2>
-              <div className="mt-4">
-                <IntervalBuilder {...intervalPlan} />
-              </div>
-            </article>
+              <IntervalBuilder {...intervalPlan} />
+            </section>
 
             <article className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
               {intervalSession.state.status === 'running' ? (
@@ -247,3 +245,4 @@ function timeAgo(timestamp: number) {
 }
 
 export default App
+

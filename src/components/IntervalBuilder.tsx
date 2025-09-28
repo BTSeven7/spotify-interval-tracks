@@ -34,7 +34,7 @@ export default function IntervalBuilder({
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-2">
         <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
           <header className="flex items-center justify-between">
             <div>
