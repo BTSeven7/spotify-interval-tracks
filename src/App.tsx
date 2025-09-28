@@ -85,8 +85,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 sm:py-16">
-        <header className="flex flex-col gap-4 rounded-3xl border border-slate-800/80 bg-slate-950/70 p-6 shadow-[0_0_80px_rgba(16,185,129,0.05)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:py-10">
+        <header className="flex flex-col gap-3 rounded-3xl border border-slate-800/70 bg-slate-950/60 p-4 shadow-[0_0_60px_rgba(16,185,129,0.04)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <h1 className="text-2xl font-semibold sm:text-3xl">Spotify Interval Tracks</h1>
           <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
             <button
@@ -107,9 +107,9 @@ function App() {
 
         <main className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-6">
-            <article className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
+            <article className="rounded-3xl border border-slate-800 bg-slate-900/40 p-4 sm:p-5">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Choose mode</h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {modeOptions.map((mode) => {
                   const selected = activeMode === mode.id
                   return (
