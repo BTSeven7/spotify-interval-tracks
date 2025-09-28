@@ -100,20 +100,20 @@ export default function SongCounterPanel({ tokens, track, trackError, isTrackLoa
       <div className="space-y-3 rounded-2xl border border-slate-800/60 bg-slate-950/40 p-4">
         <div className="grid grid-cols-2 gap-3 text-sm text-slate-300">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Remaining (current)</p>
-            <p className="text-lg font-semibold text-white">{formatDuration(session.remainingMs)}</p>
+            <p className="text-lg uppercase tracking-wide text-slate-500">Remaining (current)</p>
+            <p className="text-2xl font-semibold text-white">{formatDuration(session.remainingMs)}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">After song</p>
-            <p className="text-lg font-semibold text-white">{formatDuration(session.afterSongMs)}</p>
+            <p className="text-lg uppercase tracking-wide text-slate-500">After song</p>
+            <p className="text-2xl font-semibold text-white">{formatDuration(session.afterSongMs)}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Songs completed</p>
-            <p className="text-lg font-semibold text-white">{session.songsCompleted}</p>
+            <p className="text-lg uppercase tracking-wide text-slate-500">Songs completed</p>
+            <p className="text-2xl font-semibold text-white">{session.songsCompleted}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Total time</p>
-            <p className="text-lg font-semibold text-white">{formatDuration(session.totalElapsedMs)}</p>
+            <p className="text-lg uppercase tracking-wide text-slate-500">Total time</p>
+            <p className="text-2xl font-semibold text-white">{formatDuration(session.totalElapsedMs)}</p>
           </div>
         </div>
         {session.lastSong && (
