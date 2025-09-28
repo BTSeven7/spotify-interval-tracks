@@ -153,7 +153,7 @@ function App() {
               )}
 
               {canShowStats ? (
-                <ul className="space-y-3 text-sm text-slate-300">
+                <ul className="space-y-3 text-xl text-slate-300">
                   <li className="flex items-center justify-between">
                     <span>Status</span>
                     <span>{sessionStatusLabel}</span>
@@ -164,7 +164,7 @@ function App() {
                   </li>
                 </ul>
               ) : (
-                <p className="text-xs text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
+                <p className="text-m text-slate-500">Connect Spotify and set an interval to enable playback cues.</p>
               )}
             </article>
           </div>
