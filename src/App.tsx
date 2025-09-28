@@ -146,15 +146,15 @@ function App() {
 
               <div className="mt-4 space-y-2 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
+                  {/* <div>
                     <p className="text-sm font-semibold text-white">Keep screen awake</p>
                     <p className="text-xs text-slate-400">{wakeLockHelperText}</p>
-                  </div>
+                  </div> */}
                   <button
                     type="button"
                     onClick={() => void wakeLock.toggle()}
                     disabled={!wakeLock.isSupported || wakeLock.isRequesting}
-                    className={`w-full rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition sm:w-auto ${wakeLock.isActive ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200' : 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-emerald-400/60 hover:text-emerald-200'} ${(!wakeLock.isSupported || wakeLock.isRequesting) ? 'cursor-not-allowed opacity-60' : ''}`}
+                    className={`w-full rounded-full border px-4 py-2 text-lg font-semibold uppercase tracking-wide transition sm:w-auto ${wakeLock.isActive ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200' : 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-emerald-400/60 hover:text-emerald-200'} ${(!wakeLock.isSupported || wakeLock.isRequesting) ? 'cursor-not-allowed opacity-60' : ''}`}
                   >
                     {wakeLockButtonLabel}
                   </button>
