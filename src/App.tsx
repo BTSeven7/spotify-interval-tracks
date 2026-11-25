@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import CountdownSlicerPanel from './components/CountdownSlicerPanel'
 import IntervalBuilder from './components/IntervalBuilder'
 import SongCounterPanel from './components/SongCounterPanel'
 import { useAuth } from './context/AuthContext'
@@ -9,11 +10,12 @@ import { useIntervalSession } from './hooks/useIntervalSession'
 import { useScreenWakeLock } from './hooks/useScreenWakeLock'
 import { beginSpotifyAuth } from './lib/spotifyAuth'
 
-type Mode = 'interval-slicer' | 'song-counter'
+type Mode = 'interval-slicer' | 'song-counter' | 'countdown-slicer'
 
 const modeOptions: Array<{ id: Mode; label: string }> = [
   { id: 'song-counter', label: 'Song Counter' },
-  { id: 'interval-slicer', label: 'Interval Slicer' }
+  { id: 'interval-slicer', label: 'Interval Slicer' },
+  { id: 'countdown-slicer', label: 'Countdown Slicer' }
 ]
 
 function App() {
@@ -38,10 +40,10 @@ function App() {
   }, [isConnected])
 
   useEffect(() => {
-    if (isSongCounterMode && intervalSession.state.status === 'running') {
+    if (activeMode !== 'interval-slicer' && intervalSession.state.status === 'running') {
       intervalSession.stopSession()
     }
-  }, [isSongCounterMode, intervalSession.state.status, intervalSession.stopSession])
+  }, [activeMode, intervalSession.state.status, intervalSession.stopSession])
 
 
   const handleConnect = useCallback(async () => {
@@ -131,7 +133,7 @@ function App() {
           <div className="space-y-6">
             <article className="rounded-3xl border border-slate-800 bg-slate-900/40 p-4 sm:p-5">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">Choose mode</h2>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {modeOptions.map((mode) => {
                   const selected = activeMode === mode.id
                   return (
@@ -169,7 +171,9 @@ function App() {
               </div>
             </article>
 
-            {isSongCounterMode ? (
+            {activeMode === 'countdown-slicer' ? (
+              <CountdownSlicerPanel tokens={tokens} intervalPlan={intervalPlan} />
+            ) : isSongCounterMode ? (
               <SongCounterPanel
                 tokens={tokens}
                 track={track}
