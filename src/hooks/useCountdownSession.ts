@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { AuthTokens } from '../context/AuthContext'
-import { loadCoachClips, playCoachClip, unlockCoachAudio } from '../lib/coachAudio'
+import {
+  isCoachAudioRunning,
+  loadCoachClips,
+  playCoachClip,
+  subscribeCoachAudio,
+  tryResumeCoachAudio,
+  unlockCoachAudio
+} from '../lib/coachAudio'
 import type { CoachClip, CountdownChunk } from '../lib/countdownPlan'
 
 export type CueStyle = 'voice' | 'skip'
@@ -27,6 +34,10 @@ export type CountdownSession = {
   currentChunkIndex: number | null
   chunkMsLeft: number | null
   totalMsLeft: number | null
+  /** Voice session is active but iOS has blocked sound; needs a tap. */
+  soundBlocked: boolean
+  /** Call from a tap to bring sound back mid-session. */
+  restoreSound: () => void
   start: () => void
   stop: () => void
 }
@@ -42,6 +53,9 @@ export function useCountdownSession(
   const timelineRef = useRef<Timeline | null>(null)
   const tickRef = useRef<number | null>(null)
   const runIdRef = useRef(0)
+  const [audioRunning, setAudioRunning] = useState(() => isCoachAudioRunning())
+
+  useEffect(() => subscribeCoachAudio(() => setAudioRunning(isCoachAudioRunning())), [])
 
   // Always skip with the latest token, even if it was renewed mid-session.
   const tokenRef = useRef(tokens?.accessToken)
@@ -176,10 +190,18 @@ export function useCountdownSession(
   // Catch up right away when the page becomes visible again.
   useEffect(() => {
     const onVisible = () => {
-      if (document.visibilityState === 'visible') tick()
+      if (document.visibilityState === 'visible') {
+        // Another app may have interrupted our audio; try to wake it.
+        tryResumeCoachAudio()
+        tick()
+      }
     }
     document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    window.addEventListener('pageshow', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('pageshow', onVisible)
+    }
   }, [tick])
 
   // Changing the plan or cue style mid-session would desync it, so stop.
@@ -188,6 +210,14 @@ export function useCountdownSession(
   }, [plan, cueStyle, stop])
 
   useEffect(() => () => stopTicker(), [stopTicker])
+
+  const restoreSound = useCallback(() => {
+    try {
+      unlockCoachAudio()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Audio is not available in this browser.')
+    }
+  }, [])
 
   const timeline = timelineRef.current
   let leadInSecondsLeft: number | null = null
@@ -209,5 +239,19 @@ export function useCountdownSession(
     totalMsLeft = Math.max(0, totalSec * 1000 - elapsedMs)
   }
 
-  return { phase, error, leadInSecondsLeft, currentChunkIndex, chunkMsLeft, totalMsLeft, start, stop }
+  const soundBlocked =
+    cueStyle === 'voice' && (phase === 'countdown' || phase === 'running') && !audioRunning
+
+  return {
+    phase,
+    error,
+    leadInSecondsLeft,
+    currentChunkIndex,
+    chunkMsLeft,
+    totalMsLeft,
+    soundBlocked,
+    restoreSound,
+    start,
+    stop
+  }
 }

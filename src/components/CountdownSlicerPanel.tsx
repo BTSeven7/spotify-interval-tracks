@@ -120,6 +120,16 @@ export default function CountdownSlicerPanel({ tokens, intervalPlan }: Countdown
         <p className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{session.error}</p>
       )}
 
+      {session.soundBlocked && (
+        <button
+          type="button"
+          onClick={session.restoreSound}
+          className="w-full rounded-2xl border border-amber-400/60 bg-amber-500/15 px-4 py-3 text-xl font-semibold text-amber-200"
+        >
+          Sound paused by iPhone. Tap to turn cues back on.
+        </button>
+      )}
+
       {session.phase === 'loading' && <p className="text-center text-xl text-slate-400">Loading cues...</p>}
 
       {session.phase === 'countdown' && (
