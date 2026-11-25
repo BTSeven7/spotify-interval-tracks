@@ -5,7 +5,12 @@
 // ring/silent switch, so the phone must not be on silent.
 //
 // iOS only allows sound after a user gesture: call unlockCoachAudio()
-// synchronously inside the Start button's click handler, before any await.
+// synchronously inside a tap handler, before any await.
+//
+// When another app takes over audio (opening Spotify, playing other music),
+// iOS interrupts the page's AudioContext, and it doesn't always come back.
+// So every unlock builds a fresh context, and callers can watch the state to
+// ask for a tap when sound is blocked mid-session.
 
 import { ALL_COACH_CLIPS, type CoachClip } from './countdownPlan'
 
@@ -16,8 +21,14 @@ type AudioSessionNavigator = Navigator & {
 type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext }
 
 let context: AudioContext | null = null
+// Decoded buffers aren't tied to one context, so they survive a rebuild.
 const buffers = new Map<CoachClip, AudioBuffer>()
 let loading: Promise<void> | null = null
+const listeners = new Set<() => void>()
+
+function notify() {
+  listeners.forEach(listener => listener())
+}
 
 function setAmbientSession() {
   const nav = navigator as AudioSessionNavigator
@@ -30,28 +41,61 @@ function setAmbientSession() {
   }
 }
 
-/** Must run inside a tap/click handler. Safe to call more than once. */
+/** True when clips can actually be heard right now. */
+export function isCoachAudioRunning() {
+  return context?.state === 'running'
+}
+
+/** Subscribe to audio state changes (running, suspended, interrupted...). */
+export function subscribeCoachAudio(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+/**
+ * Must run inside a tap/click handler. Throws away any previous context
+ * (it may be stuck after an iOS interruption) and starts a fresh one.
+ */
 export function unlockCoachAudio() {
   setAmbientSession()
 
-  if (!context) {
-    const Ctor = window.AudioContext ?? (window as WebkitWindow).webkitAudioContext
-    if (!Ctor) {
-      throw new Error('This browser does not support Web Audio.')
-    }
-    context = new Ctor()
+  const Ctor = window.AudioContext ?? (window as WebkitWindow).webkitAudioContext
+  if (!Ctor) {
+    throw new Error('This browser does not support Web Audio.')
   }
 
-  if (context.state !== 'running') {
-    void context.resume().catch(() => undefined)
+  if (context) {
+    const old = context
+    old.onstatechange = null
+    void old.close().catch(() => undefined)
+  }
+
+  const fresh = new Ctor()
+  fresh.onstatechange = notify
+  context = fresh
+
+  if (fresh.state !== 'running') {
+    void fresh.resume().catch(() => undefined)
   }
 
   // Playing a silent buffer inside the gesture fully unlocks older iOS versions.
-  const silent = context.createBuffer(1, 1, 22050)
-  const source = context.createBufferSource()
+  const silent = fresh.createBuffer(1, 1, 22050)
+  const source = fresh.createBufferSource()
   source.buffer = silent
-  source.connect(context.destination)
+  source.connect(fresh.destination)
   source.start(0)
+
+  notify()
+}
+
+/** Try to wake the context without a tap (works after some interruptions). */
+export function tryResumeCoachAudio() {
+  if (context && context.state !== 'running' && context.state !== 'closed') {
+    setAmbientSession()
+    void context.resume().catch(() => undefined)
+  }
 }
 
 async function loadClip(ctx: AudioContext, name: CoachClip) {
@@ -90,10 +134,7 @@ export function playCoachClip(name: CoachClip) {
     return
   }
 
-  // iOS can suspend the context (e.g. after a phone call); try to wake it.
-  if (context.state !== 'running') {
-    void context.resume().catch(() => undefined)
-  }
+  tryResumeCoachAudio()
 
   const source = context.createBufferSource()
   source.buffer = buffer
